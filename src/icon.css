@@ -140,6 +140,9 @@
 .refresh-icon {
   background: no-repeat center / contain var(--refresh-icon);
 }
+.flip-icon {
+  background: no-repeat center / contain var(--flip-icon);
+}
 
 .cloud-check-icon {
   background: no-repeat center / contain var(--cloud-check-icon);
