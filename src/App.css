@@ -406,6 +406,10 @@ button {
   top: 12px;
 }
 
+.top-16 {
+  top: 16px;
+}
+
 .top-50percent {
   top: 50%;
   transform: translateY(-50%) !important;
@@ -475,6 +479,10 @@ button {
 
 .right-12 {
   right: 12px;
+}
+
+.right-16 {
+  right: 16px;
 }
 
 .right-50 {
