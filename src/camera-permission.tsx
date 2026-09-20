@@ -12,6 +12,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import CustomDropdown, { Option } from "./components/CustomDropdown";
+import IconButton from "./components/IconButton";
 import PermissionPopup from "./components/PermissionPopup";
 
 const CameraIcon = (
@@ -32,22 +33,43 @@ interface CameraPermissionsProps {
   disabled?: boolean;
   isFlipped?: boolean;
   setIsFlipped?: (v: boolean) => void;
+  isAuthenticated: boolean;
+  onLoginRequest: () => void;
+  onStartAnimation: () => void;
+  onStopAnimation: () => void;
+  animationStarted: boolean;
+  isInPlayback?: boolean;
 }
 
-export default function CameraPermissions({ onStreamReady, disabled, isFlipped, setIsFlipped }: CameraPermissionsProps) {
+export default function CameraPermissions({
+  onStreamReady,
+  disabled,
+  isFlipped,
+  setIsFlipped,
+  isAuthenticated,
+  onLoginRequest,
+  onStartAnimation,
+  onStopAnimation,
+  animationStarted,
+  isInPlayback = false,
+}: CameraPermissionsProps) {
   const [permissionState, setPermissionState] = useState<"prompt" | "denied" | "granted" | "inuse">("prompt");
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
   const [selectedCamera, setSelectedCamera] = useState<string | null>(null);
+  const [cameraPromptAcknowledged, setCameraPromptAcknowledged] = useState(false);
+  const [startAnimationPending, setStartAnimationPending] = useState(false);
+  const [previewStream, setPreviewStream] = useState<MediaStream | null>(null);
+  const previewVideoRef = useRef<HTMLVideoElement | null>(null);
   const activeStreamRef = useRef<MediaStream | null>(null);
+  const cameraRequestIdRef = useRef(0);
 
   const requestCamera = async (deviceId?: string) => {
+    const requestId = ++cameraRequestIdRef.current;
+
     try {
-      // Stop any previously active tracks before opening a new stream so the
-      // old camera is released and we don't accumulate stale MediaStreamTracks.
-      if (activeStreamRef.current) {
-        activeStreamRef.current.getTracks().forEach((t) => t.stop());
-        activeStreamRef.current = null;
-      }
+      // Acquire the replacement before stopping the current stream. This keeps
+      // the preview alive while switching and avoids a black frame when a
+      // device takes a moment to release its video track.
 
       // On mobile, strict resolution constraints (e.g. 1280x720) cause
       // getUserMedia to fail or return a degraded stream on many Samsung/Xiaomi
@@ -65,11 +87,26 @@ export default function CameraPermissions({ onStreamReady, disabled, isFlipped, 
         audio: false,
       };
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      activeStreamRef.current = stream;
-      setPermissionState("granted");
 
+      // A newer selection may have completed while this request was pending.
+      // Discard the stale stream instead of letting it replace the current feed.
+      if (requestId !== cameraRequestIdRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+
+      const previousStream = activeStreamRef.current;
+      activeStreamRef.current = stream;
+      setPreviewStream(stream);
+      setPermissionState("granted");
+      setCameraPromptAcknowledged(true);
+
+      previousStream?.getTracks().forEach((track) => track.stop());
       onStreamReady(stream);
     } catch (err: any) {
+      // Ignore failures from an outdated selection; a newer request owns the UI.
+      if (requestId !== cameraRequestIdRef.current) return;
+
       // NotReadableError / AbortError → hardware is locked by another app or tab
       // NotAllowedError / PermissionDeniedError → user blocked access in the browser
       const name: string = err?.name ?? "";
@@ -87,40 +124,119 @@ export default function CameraPermissions({ onStreamReady, disabled, isFlipped, 
     setCameras(videoInputs);
 
     const savedCamera = localStorage.getItem("selectedCamera");
-    if (savedCamera && videoInputs.find((d) => d.deviceId === savedCamera)) {
-      setSelectedCamera(savedCamera);
-      requestCamera(savedCamera);
-    } else if (videoInputs.length > 0) {
-      const firstCam = videoInputs[0].deviceId;
-      setSelectedCamera(firstCam);
-      requestCamera(firstCam);
-    }
+    const preferredCamera = savedCamera && videoInputs.find((d) => d.deviceId === savedCamera)
+      ? savedCamera
+      : videoInputs[0]?.deviceId ?? null;
+
+    setSelectedCamera(preferredCamera);
+    return { devices: videoInputs, preferredCamera };
   }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
+  const handleCameraAccessLost = useCallback(() => {
+    cameraRequestIdRef.current += 1;
+    activeStreamRef.current?.getTracks().forEach((track) => track.stop());
+    activeStreamRef.current = null;
+    setPreviewStream(null);
+    setCameraPromptAcknowledged(false);
+    setPermissionState("denied");
+    setCameras([]);
+    if (animationStarted) onStopAnimation();
+  }, [animationStarted, onStopAnimation]);
+
   const handleCameraChange = (deviceId: string) => {
+    if (animationStarted) return;
     setSelectedCamera(deviceId);
     localStorage.setItem("selectedCamera", deviceId);
-    requestCamera(deviceId);
+    void requestCamera(deviceId);
+  };
+
+  const handleStartAnimation = () => {
+    if (!isAuthenticated) {
+      setStartAnimationPending(true);
+      onLoginRequest();
+      return;
+    }
+
+    setStartAnimationPending(false);
+    onStartAnimation();
   };
 
   useEffect(() => {
-    if (navigator.permissions) {
-      navigator.permissions.query({ name: "camera" as PermissionName }).then((result) => {
-        setPermissionState(result.state as any);
-        if (result.state === "granted") loadCameras();
-
-        result.onchange = () => {
-          // Only update if we're not already showing the "in use" error —
-          // a permission change event should not stomp over the hardware-busy state.
-          setPermissionState((prev) => {
-            if (prev === "inuse") return prev;
-            return result.state as any;
-          });
-          if (result.state === "granted") loadCameras();
-        };
-      });
+    if (isAuthenticated && startAnimationPending) {
+      setStartAnimationPending(false);
+      onStartAnimation();
     }
-  }, [loadCameras]);
+  }, [isAuthenticated, onStartAnimation, startAnimationPending]);
+
+  useEffect(() => {
+    const video = previewVideoRef.current;
+    if (!video || !previewStream) return;
+
+    video.srcObject = previewStream;
+    const playPreview = () => {
+      void video.play().catch(() => undefined);
+    };
+    video.addEventListener("loadedmetadata", playPreview);
+    playPreview();
+
+    return () => {
+      video.removeEventListener("loadedmetadata", playPreview);
+      if (video.srcObject === previewStream) video.srcObject = null;
+    };
+  }, [previewStream, cameraPromptAcknowledged, animationStarted, isInPlayback]);
+
+  useEffect(() => {
+    if (!navigator.permissions) return;
+
+    let permissionStatus: PermissionStatus | null = null;
+    let cancelled = false;
+
+    const applyPermissionState = async (state: PermissionState) => {
+      if (cancelled) return;
+
+      if (state === "granted") {
+        setPermissionState("granted");
+        setCameraPromptAcknowledged(true);
+        const { preferredCamera } = await loadCameras();
+        if (!cancelled && !activeStreamRef.current && preferredCamera) {
+          void requestCamera(preferredCamera);
+        }
+        return;
+      }
+
+      if (state === "denied") {
+        handleCameraAccessLost();
+      } else {
+        setPermissionState("prompt");
+      }
+    };
+
+    navigator.permissions.query({ name: "camera" as PermissionName }).then((result) => {
+      if (cancelled) return;
+      permissionStatus = result;
+      void applyPermissionState(result.state);
+      result.onchange = () => void applyPermissionState(result.state);
+    });
+
+    return () => {
+      cancelled = true;
+      if (permissionStatus) permissionStatus.onchange = null;
+    };
+  }, [handleCameraAccessLost, loadCameras]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const stream = activeStreamRef.current;
+    if (!stream) return;
+
+    const handleTrackEnded = () => {
+      if (stream === activeStreamRef.current && stream.getVideoTracks().every((track) => track.readyState === "ended")) {
+        handleCameraAccessLost();
+      }
+    };
+
+    stream.getVideoTracks().forEach((track) => track.addEventListener("ended", handleTrackEnded));
+    return () => stream.getVideoTracks().forEach((track) => track.removeEventListener("ended", handleTrackEnded));
+  }, [previewStream, handleCameraAccessLost]);
 
   const dropdownOptions: Option[] = cameras.map((cam, idx) => {
     const icon = idx % 2 === 0 ? CameraIcon : VideoIcon;
@@ -133,12 +249,12 @@ export default function CameraPermissions({ onStreamReady, disabled, isFlipped, 
 
   return (
     <>
-      {permissionState === "prompt" && (
+      {permissionState === "prompt" && !cameraPromptAcknowledged && (
         <PermissionPopup
           variant="prompt"
           title="pssst… give camera access to animate!"
-          subtitle="use your camera for fun face animation! by tapping 'let’s go & allow,' you agree to camera and cookie use."
-          buttonText="let’s go & allow"
+          subtitle="use your camera for fun face animation! by tapping 'allow camera access' you agree to camera and cookie use."
+          buttonText="allow camera access"
           onClick={() => requestCamera(selectedCamera || undefined)}
           showButton
         />
@@ -175,10 +291,31 @@ export default function CameraPermissions({ onStreamReady, disabled, isFlipped, 
         />
       )}
 
+      {cameraPromptAcknowledged && activeStreamRef.current && !animationStarted && !isInPlayback && (
+        <div className="camera-preview-start flex pos-fixed flex-col camera-feed w-135 overflow-hidden tb:w-400 br-12 tb:br-24 m-2 p-2 bg-blur z-999">
+          <video
+            ref={previewVideoRef}
+            autoPlay
+            playsInline
+            muted
+            aria-label="Camera preview"
+            className={`camera-preview br-12 ${isFlipped ? "flipped-x" : ""}`}
+          />
+          <button
+            type="button"
+            className="button primary prompt-button"
+            onClick={handleStartAnimation}
+          >
+            animate
+          </button>
+        </div>
+      )}
+
       {/* Main control div */}
       <div className={`flex flex-row flex-start gap-1 pos-abs reveal fade scaleIn top-0 left-0 z-9991 m-1 tb:m-6`}>
         {permissionState === "granted" && cameras.length > 1 && (
-          <div className={`flex camera-selection cp-dropdown ${disabled ? " switcher-disabled" : ""}`}>
+          <div className={`flex camera-selection cp-dropdown ${disabled || animationStarted ? " switcher-disabled" : ""}`}>
+
             <CustomDropdown
               options={dropdownOptions}
               value={selectedCamera}
@@ -187,12 +324,14 @@ export default function CameraPermissions({ onStreamReady, disabled, isFlipped, 
             />
           </div>
         )}
-        <button
-          className="flex video-flip-switcher icon-holder br-12 tab-button size-30 mb:size-48"
+        <IconButton
+          icon="flip-icon"
+          iconSize="icon-size-18"
+          className={`flex video-flip-switcher icon-holder br-12 tab-button size-30  ${isFlipped ? "flipped" : ""}`}
           onClick={() => setIsFlipped && setIsFlipped(!isFlipped)}
-        >
-          <span className={`has-icon icon-size-18 flip-icon ${isFlipped ? "flipped" : ""}`}></span>
-        </button>
+          title="Flip camera"
+          ariaPressed={isFlipped}
+        />
       </div>
     </>
   );

@@ -16,6 +16,7 @@ interface IconButtonProps {
   tooltip?: boolean;
   tooltipText?: string;
   tooltipPosition?: TooltipPosition;
+  ariaPressed?: boolean;
 }
 
 const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
@@ -33,6 +34,7 @@ const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
       tooltip = false,
       tooltipText = "",
       tooltipPosition = "pos-bottom",
+      ariaPressed,
     },
     ref
   ) => {
@@ -89,6 +91,7 @@ const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
         disabled={disabled}
         title={title}
         aria-label={tooltipText || title}
+        aria-pressed={ariaPressed}
         className={clsx("button icon-button pos-rel br-1", className)}
         style={style}
       >

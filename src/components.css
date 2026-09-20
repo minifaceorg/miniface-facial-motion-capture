@@ -631,10 +631,11 @@ button.camera-dropdown {
    BUTTONS (THEMED)
 ========================= */
 button.primary,
+button.tertiary,
 button.secondary,
 a.button.primary,
 a.button.secondary {
-  margin-top: 16px;
+  margin-top: 8px;
 }
 
 a.button {
@@ -650,6 +651,12 @@ button.primary,
 a.button.primary {
   background-color: var(--purple-900);
   color: var(--gray-100);
+}
+
+button.tertiary,
+a.button.tertiary {
+  background-color: var(--white-color);
+  color: var(--black-color);
 }
 
 button,

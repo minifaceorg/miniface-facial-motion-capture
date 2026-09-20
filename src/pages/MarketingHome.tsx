@@ -44,7 +44,7 @@ function RotatingAudienceWord() {
 
 function ProductVideo({ compact = false }: { compact?: boolean }) {
   return (
-    <div className={`marketing-video br-2 ${compact ? "marketing-video--compact" : ""}`}>
+    <div className={`marketing-video br-20 ${compact ? "marketing-video--compact" : ""}`}>
       <video
         autoPlay
         muted
@@ -53,7 +53,7 @@ function ProductVideo({ compact = false }: { compact?: boolean }) {
         poster={VIDEO_POSTER}
         src={VIDEO_SRC}
         aria-label="Miniface motion capture product demonstration"
-        className=""
+        className="br-20"
       />
       {/* <div className="video-caption"><span className="status-dot" />Live capture / Miniface</div> */}
     </div>

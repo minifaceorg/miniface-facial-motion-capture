@@ -78,10 +78,12 @@ export default function AuthModal({ onClose, onDriveConnected, hasPendingMotion 
         redirectTo: getAuthRedirectUrl(),
         skipBrowserRedirect: false,
         scopes: DRIVE_SCOPE,
-        queryParams: {
-          access_type: "offline",
-          prompt: "consent",
-        },
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+            // Keep the Drive grant when Google re-authenticates the user.
+            include_granted_scopes: "true",
+          },
       },
     });
     if (err) {
@@ -199,11 +201,11 @@ export default function AuthModal({ onClose, onDriveConnected, hasPendingMotion 
       backdrop
       onBackdropClick={onClose}
       aria-label="Sign in"
-      title="Connect to save your motion and sync forever"
+      title="connect to animate and save your motions"
       className="auth-popup"
     >
       <p className="subtitle prompt-subtitle mt-4">
-        sign in with Google to save your motions to Drive and access them from any device.{" "}
+        verify that you are human using your Google email...{" "}
         By continuing you agree to{" "}
         <a href="/terms" target="_blank" rel="noreferrer">Terms</a> and{" "}
         <a href="/privacy" target="_blank" rel="noreferrer">Privacy</a>.

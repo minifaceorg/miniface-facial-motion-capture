@@ -31,6 +31,9 @@
   --trash-icon: url('../public/images/app/icons/icon_trash.svg');
   --refresh-icon: url("../public/images/app/icons/icon_refresh.svg");
   --cloudcheck-icon: url("../public/images/app/icons/icon_cloudcheck.svg");
+  --cloudcheck-icon: url("../public/images/app/icons/icon_cloudcheck.svg");
+  --show-icon: url("../public/images/app/icons/icon_show.svg");
+  --hide-icon: url("../public/images/app/icons/icon_hide.svg");
 
 
 
@@ -85,6 +88,12 @@
   min-height: 32px;
 }
 
+.show-icon {
+  background: no-repeat center / contain var(--show-icon);
+}
+.hide-icon {
+  background: no-repeat center / contain var(--hide-icon);
+}
 .dropdown-icon {
   background: no-repeat center / contain var(--dropdown-icon);
 }
@@ -130,6 +139,9 @@
 
 .refresh-icon {
   background: no-repeat center / contain var(--refresh-icon);
+}
+.flip-icon {
+  background: no-repeat center / contain var(--flip-icon);
 }
 
 .cloud-check-icon {

@@ -48,7 +48,7 @@ body:has(.marketing-page),
 }
 
 .brand-logo {
-  border-radius: 8px;
+  border-radius: 6px;
   display: inline-block;
   height: 22px;
   object-fit: cover;
@@ -86,7 +86,7 @@ body:has(.marketing-page),
 .nav-links a,
 .marketing-footer a,
 .marketing-footer span {
-  color: var(--muted-ink);
+
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.04rem;
@@ -225,9 +225,8 @@ body:has(.marketing-page),
 }
 
 .marketing-video {
-  background: #161620;
-  border-radius: 5px;
-  box-shadow: 0 20px 70px rgba(20, 19, 40, .18);
+
+
   overflow: hidden;
   position: relative;
 }

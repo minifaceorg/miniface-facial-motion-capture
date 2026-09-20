@@ -59,6 +59,7 @@ function App() {
   const [initError, setInitError] = useState<string | null>(null);
   const [recordingPhase, setRecordingPhase] = useState<"idle" | "recording" | "review" | "done">("idle");
   const [isFlipped, setIsFlipped] = useState(true);
+  const [animationStarted, setAnimationStarted] = useState(false);
 
   // ── Playback state ────────────────────────────────────────────────────────
   const [playbackBlob, setPlaybackBlob] = useState<Blob | null>(null);
@@ -96,6 +97,7 @@ function App() {
   // Lifted from MotionLibrary so the popup is always visible, even when the
   // library panel is closed.
   const [noDriveAccessDetected, setNoDriveAccessDetected] = useState(false);
+  const [driveDisconnecting, setDriveDisconnecting] = useState(false);
 
   /** Directly triggers Google OAuth with Drive scope — skips the AuthModal. */
   const handleGoogleReAuth = useCallback(async () => {
@@ -107,12 +109,23 @@ function App() {
         redirectTo: getAuthRedirectUrl(),
         skipBrowserRedirect: false,
         scopes: DRIVE_SCOPE,
-        queryParams: {
+          queryParams: {
           access_type: "offline",
           prompt: "consent",
+          // Prevent this re-auth flow from replacing previously granted scopes.
+          include_granted_scopes: "true",
         },
       },
     });
+  }, []);
+
+  /** Signs the user out from the persistent missing-Drive-permission popup. */
+  const handleDriveDisconnect = useCallback(async () => {
+    if (!supabase) return;
+    setDriveDisconnecting(true);
+    clearDriveTokens();
+    await supabase.auth.signOut();
+    window.location.reload();
   }, []);
 
   // ── Drive scope state (drive token can appear after sign-in redirect) ─────
@@ -123,6 +136,12 @@ function App() {
   // same already-resolved user — eliminating the async flash in AuthModal where
   // it would render the signed-out view for a frame before getSession resolved.
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    if (!currentUser) {
+      setAnimationStarted(false);
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     if (!supabase) return;
@@ -153,12 +172,15 @@ function App() {
     window.addEventListener("focus", check);
     // Re-check on sessionStorage changes (storeDriveTokens writes here)
     window.addEventListener("storage", check);
+    // Custom event covers same-tab token writes; native storage events do not.
+    window.addEventListener("miniface:drive-token", check);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
       window.removeEventListener("focus", check);
       window.removeEventListener("storage", check);
+      window.removeEventListener("miniface:drive-token", check);
     };
   }, []);
 
@@ -249,9 +271,11 @@ function App() {
     setMediapipeReady(true);
   }, []);
 
-  // Start a 30-second timeout once avatar + stream are both ready.
+  // Start the fallback timeout only after the authenticated user explicitly
+  // starts animation. Camera permission and preview alone must not initialise
+  // MediaPipe or trigger model loading.
   useEffect(() => {
-    if (avatarReady && videoStream && !mediapipeReady) {
+    if (currentUser && animationStarted && avatarReady && videoStream && !mediapipeReady) {
       mediapipeTimeoutRef.current = setTimeout(() => {
         setMediapipeReady(true);
       }, 30000);
@@ -262,7 +286,7 @@ function App() {
         mediapipeTimeoutRef.current = null;
       }
     };
-  }, [avatarReady, videoStream, mediapipeReady]);
+  }, [currentUser, animationStarted, avatarReady, videoStream, mediapipeReady]);
 
   const handleAvatarChange = (newUrl: string, keepPending = false) => {
     discardRecording();
@@ -348,7 +372,7 @@ function App() {
     });
   }, []);
 
-  // ── Subscribe to sign-in without Drive scope ──────────────────────────────
+  // ── Subscribe to sign-in without Drive scope ────────────────────────��─────
   // When the user signs in with Google but does NOT grant Drive appdata access,
   // supabaseClient fires notifyNoDriveScope(). We auto-open the AuthModal so
   // they immediately see the friendly "grant Drive access" prompt. Their
@@ -362,7 +386,7 @@ function App() {
     });
   }, []);
 
-  // ── Subscribe to Drive upload completions ──────────────────────────────��──
+  // ── Subscribe to Drive upload completions ────��─────────────────────────��──
   // When uploadToDrive() succeeds (from any call site — stopRecording, the
   // hasDrive-transition effect, etc.) we get the DriveMotionFile back and:
   //  1. Replace pendingMotion with the confirmed Drive file (real driveFileId)
@@ -454,7 +478,8 @@ function App() {
   // ── "Do another" → back to idle, clear playback ───────────────────────────
   // Called by BOTH PlaybackControls (scrubber bar) and RecordingControls.
   const handleDoAnother = useCallback(() => {
-    setPlaybackBlob(null);
+  setAnimationStarted(false);
+  setPlaybackBlob(null);
     setActiveMotionId(null);
     setActiveMotionName(undefined);
     pendingPlaybackRef.current = null;
@@ -476,7 +501,8 @@ function App() {
 
   // ── Start live capture from inside library panel or player ───────────────
   const handleStartLive = useCallback(() => {
-    const wasInPlayback = !!playbackBlob;
+  setAnimationStarted(false);
+  const wasInPlayback = !!playbackBlob;
 
     // If currently recording, stop gracefully before switching
     if (recordingPhase === "recording") {
@@ -606,6 +632,13 @@ function App() {
   const isInPlayback = playbackBlob !== null;
   const faceTrackingDisabled = isSwitcherDisabled || isInPlayback;
 
+  const handleStopAnimation = useCallback(() => {
+    setAnimationStarted(false);
+    setMediapipeReady(false);
+    setInitProgress(null);
+    setInitError(null);
+  }, []);
+
   return (
     <div className="App">
       <CameraPermissions
@@ -613,15 +646,21 @@ function App() {
         disabled={isSwitcherDisabled || isInPlayback}
         isFlipped={isFlipped}
         setIsFlipped={setIsFlipped}
-      />
+        isAuthenticated={currentUser !== null}
+  onLoginRequest={() => setShowAuthModal(true)}
+  onStartAnimation={() => setAnimationStarted(true)}
+  onStopAnimation={handleStopAnimation}
+  animationStarted={animationStarted}
+  isInPlayback={isInPlayback}
+  />
 
       <TrackingLoader
-        visible={avatarReady && videoStream != null && !mediapipeReady && !isInPlayback}
+        visible={currentUser !== null && animationStarted && avatarReady && videoStream != null && !mediapipeReady && !isInPlayback}
         progress={initProgress}
         error={initError}
       />
 
-      {videoStream && !isInPlayback && (
+      {currentUser !== null && animationStarted && videoStream && !isInPlayback && (
         <FaceTracking
           videoStream={videoStream}
           onMediapipeReady={handleMediapipeReady}
@@ -629,6 +668,7 @@ function App() {
           onInitError={setInitError}
           disabled={faceTrackingDisabled}
           isFlipped={isFlipped}
+          onStopAnimation={handleStopAnimation}
         />
       )}
 
@@ -767,6 +807,15 @@ function App() {
           >
             <span className="has-icon icon-size-14 google-icon" aria-hidden="true" />
             continue with Google
+          </button>
+          <button
+            className="button primary w-full mt-8"
+            onClick={handleDriveDisconnect}
+            disabled={driveDisconnecting}
+            aria-label="Disconnect and sign out"
+            style={{ background: "var(--bg-secondary)", color: "var(--text-primary)" }}
+          >
+            {driveDisconnecting ? "disconnecting..." : "disconnect"}
           </button>
         </PermissionPopup>
       )}
