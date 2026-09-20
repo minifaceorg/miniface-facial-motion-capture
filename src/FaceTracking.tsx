@@ -50,10 +50,10 @@ export let isMediaPipeActive = false;
  * waiting for the user to physically move their hands out of the webcam frame.
  */
 export function clearHandTracking(): void {
-  leftFingerBones  = null;
+  leftFingerBones = null;
   rightFingerBones = null;
-  leftWristPos     = null;
-  rightWristPos    = null;
+  leftWristPos = null;
+  rightWristPos = null;
 }
 
 // ─── Finger bone globals ──────────────────────────────────────────────────────
@@ -62,25 +62,25 @@ export function clearHandTracking(): void {
 // These are read by Avatar.tsx in the useFrame hot path.
 
 export type FingerQuats = {
-  Wrist:   [number,number,number,number] | null;
-  Thumb1:  [number,number,number,number] | null;
-  Thumb2:  [number,number,number,number] | null;
-  Thumb3:  [number,number,number,number] | null;
-  Index1:  [number,number,number,number] | null;
-  Index2:  [number,number,number,number] | null;
-  Index3:  [number,number,number,number] | null;
-  Middle1: [number,number,number,number] | null;
-  Middle2: [number,number,number,number] | null;
-  Middle3: [number,number,number,number] | null;
-  Ring1:   [number,number,number,number] | null;
-  Ring2:   [number,number,number,number] | null;
-  Ring3:   [number,number,number,number] | null;
-  Pinky1:  [number,number,number,number] | null;
-  Pinky2:  [number,number,number,number] | null;
-  Pinky3:  [number,number,number,number] | null;
+  Wrist: [number, number, number, number] | null;
+  Thumb1: [number, number, number, number] | null;
+  Thumb2: [number, number, number, number] | null;
+  Thumb3: [number, number, number, number] | null;
+  Index1: [number, number, number, number] | null;
+  Index2: [number, number, number, number] | null;
+  Index3: [number, number, number, number] | null;
+  Middle1: [number, number, number, number] | null;
+  Middle2: [number, number, number, number] | null;
+  Middle3: [number, number, number, number] | null;
+  Ring1: [number, number, number, number] | null;
+  Ring2: [number, number, number, number] | null;
+  Ring3: [number, number, number, number] | null;
+  Pinky1: [number, number, number, number] | null;
+  Pinky2: [number, number, number, number] | null;
+  Pinky3: [number, number, number, number] | null;
 } | null;
 
-export let leftFingerBones:  FingerQuats = null;
+export let leftFingerBones: FingerQuats = null;
 export let rightFingerBones: FingerQuats = null;
 
 /**
@@ -90,7 +90,7 @@ export let rightFingerBones: FingerQuats = null;
  * z: depth, roughly 0 at arm's-length, negative = closer to camera
  * null when the hand is not visible.
  */
-export let leftWristPos:  [number, number, number] | null = null;
+export let leftWristPos: [number, number, number] | null = null;
 export let rightWristPos: [number, number, number] | null = null;
 
 /**
@@ -101,7 +101,7 @@ export let rightWristPos: [number, number, number] | null = null;
  * Avatar.tsx converts this offset to Three.js world space and uses it as the
  * live elbow hint for the 2-bone IK solver, replacing the hardcoded offset.
  */
-export let leftElbowOffset:  [number, number, number] | null = null;
+export let leftElbowOffset: [number, number, number] | null = null;
 export let rightElbowOffset: [number, number, number] | null = null;
 
 // ─── Mobile detection (main thread copy — still needed to choose worker mode) ─
@@ -225,11 +225,11 @@ function FaceTracking({
             blendshapes: any[];
             matrixData: number[] | null;
             eulerData: [number, number, number] | null;
-            leftFingers:      FingerQuats;
-            rightFingers:     FingerQuats;
-            leftWristPos:     [number, number, number] | null;
-            rightWristPos:    [number, number, number] | null;
-            leftElbowOffset:  [number, number, number] | null;
+            leftFingers: FingerQuats;
+            rightFingers: FingerQuats;
+            leftWristPos: [number, number, number] | null;
+            rightWristPos: [number, number, number] | null;
+            leftElbowOffset: [number, number, number] | null;
             rightElbowOffset: [number, number, number] | null;
           };
         };
@@ -251,12 +251,12 @@ function FaceTracking({
         }
 
         // Update finger bone globals — null means hand not visible this frame
-        leftFingerBones  = payload.leftFingers  ?? null;
+        leftFingerBones = payload.leftFingers ?? null;
         rightFingerBones = payload.rightFingers ?? null;
-        leftWristPos     = payload.leftWristPos  ?? null;
-        rightWristPos    = payload.rightWristPos ?? null;
+        leftWristPos = payload.leftWristPos ?? null;
+        rightWristPos = payload.rightWristPos ?? null;
         // Elbow direction offsets from PoseLandmarker — null when occluded or unavailable
-        leftElbowOffset  = payload.leftElbowOffset  ?? null;
+        leftElbowOffset = payload.leftElbowOffset ?? null;
         rightElbowOffset = payload.rightElbowOffset ?? null;
 
         isMediaPipeActive = true;
@@ -312,11 +312,11 @@ function FaceTracking({
       isMediaPipeActive = false;
       headMatrix = null;
       blendshapes = [];
-      leftFingerBones  = null;
+      leftFingerBones = null;
       rightFingerBones = null;
-      leftWristPos     = null;
-      rightWristPos    = null;
-      leftElbowOffset  = null;
+      leftWristPos = null;
+      rightWristPos = null;
+      leftElbowOffset = null;
       rightElbowOffset = null;
       onMediapipeReadyFiredRef.current = false;
     };
@@ -325,14 +325,14 @@ function FaceTracking({
   return (
     <div
       id="video"
-      className={`flex pos-fixed flex-col camera-feed w-1 overflow-hidden tb:w-400 br-12 tb:br-24 m-2 p-2 bg-blur ${disabled ? " switcher-disabled" : ""}`}
+      className={`flex pos-fixed flex-col camera-feed z-999 w-1 overflow-hidden tb:w-400 br-12 tb:br-24 m-2 p-2 bg-blur ${disabled ? " switcher-disabled" : ""}`}
     >
       <video
         ref={videoRef}
         autoPlay
         playsInline
         muted
-        className={`br-2 ${isFlipped ? "flipped-x" : ""}`}
+        className={`br-2 br-12 ${isFlipped ? "flipped-x" : ""}`}
         style={{}}
       />
       {onStopAnimation && (
