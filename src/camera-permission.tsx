@@ -182,7 +182,7 @@ export default function CameraPermissions({
       video.removeEventListener("loadedmetadata", playPreview);
       if (video.srcObject === previewStream) video.srcObject = null;
     };
-  }, [previewStream, cameraPromptAcknowledged]);
+  }, [previewStream, cameraPromptAcknowledged, animationStarted, isInPlayback]);
 
   useEffect(() => {
     if (!navigator.permissions) return;
