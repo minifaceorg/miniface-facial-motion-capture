@@ -338,7 +338,7 @@ function FaceTracking({
         style={isVideoDimmed ? { height: "46px", filter: "brightness(0.3)" } : undefined}
       />
       <IconButton
-        icon="has-icon hide-icon flipped"
+        icon={`has-icon ${isVideoDimmed ? "show-icon" : "hide-icon"} flipped`}
         iconSize="icon-size-18"
         className="icon-size-32"
         title={isVideoDimmed ? "show video" : "hide video"}
