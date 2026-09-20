@@ -338,7 +338,7 @@ function FaceTracking({
       {onStopAnimation && (
         <button
           type="button"
-          className="primary-button camera-preview-stop"
+          className="tertiary button camera-preview-stop"
           onClick={onStopAnimation}
         >
           stop animation

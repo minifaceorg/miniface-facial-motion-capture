@@ -128,13 +128,6 @@
 
 
 
-.camera-preview-stop {
-  position: static;
-  width: 100%;
-  margin-top: 0.5rem;
-  z-index: 1;
-}
-
 .camera-preview {
   display: block;
   width: 100%;
@@ -142,19 +135,6 @@
   object-fit: cover;
   background: #111;
 }
-
-.primary-button {
-  border: 0;
-  padding: 0.75rem 1.5rem;
-  color: #fff;
-  background: #111;
-  font-weight: 500;
-}
-
-.primary-button:hover {
-  filter: brightness(1.15);
-}
-
 /* =========================
   BOX SIZING / RESET -
 ========================= */
