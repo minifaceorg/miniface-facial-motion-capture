@@ -406,6 +406,10 @@ button {
   top: 12px;
 }
 
+.top-16 {
+  top: 16px;
+}
+
 .top-50percent {
   top: 50%;
   transform: translateY(-50%) !important;
@@ -475,6 +479,10 @@ button {
 
 .right-12 {
   right: 12px;
+}
+
+.right-16 {
+  right: 16px;
 }
 
 .right-50 {
@@ -900,7 +908,10 @@ button {
   min-width: calc(100vw - 40px);
   max-width: calc(100vw - 40px);
 }
-
+.w-135 {
+  max-width: 135px;
+  min-width: 135px;
+}
 /* =========================
    BORDER RADIUS
 ========================= */
@@ -1879,6 +1890,10 @@ p.subtitle.refresh-subtitle {
    TABLET AND UP  (min-width: 769px)
 ========================= */
 @media (min-width: 769px) {
+  .tb\:top-16 {
+    top: 16px;
+  }
+
   .tb\:left-0 {
     left: 0 !important;
   }
@@ -1943,6 +1958,9 @@ p.subtitle.refresh-subtitle {
   .tb\:right-12 {
     right: 12px;
   }
+  .tb\:right-16 {
+    right: 16px;
+  }
 
   .tb\:right-50 {
     right: 50%;
@@ -2005,8 +2023,8 @@ p.subtitle.refresh-subtitle {
   }
 
   .tb\:w-400 {
-    min-width: 265px;
-    max-width: 265px;
+    min-width: 280px;
+    max-width: 280px;
   }
 
   .tb\:w-392 {

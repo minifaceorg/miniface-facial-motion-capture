@@ -12,6 +12,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import CustomDropdown, { Option } from "./components/CustomDropdown";
+import IconButton from "./components/IconButton";
 import PermissionPopup from "./components/PermissionPopup";
 
 const CameraIcon = (
@@ -314,12 +315,14 @@ export default function CameraPermissions({
             />
           </div>
         )}
-        <button
-          className="flex video-flip-switcher icon-holder br-12 tab-button size-30 mb:size-48"
-          onClick={() => setIsFlipped && setIsFlipped(!isFlipped)}
-        >
-          <span className={`has-icon icon-size-18 flip-icon ${isFlipped ? "flipped" : ""}`}></span>
-        </button>
+      <IconButton
+        icon="flip-icon"
+        iconSize="icon-size-18"
+        className={`flex video-flip-switcher icon-holder br-12 tab-button size-30 mb:size-48 ${isFlipped ? "flipped" : ""}`}
+        onClick={() => setIsFlipped && setIsFlipped(!isFlipped)}
+        title="Flip camera"
+        ariaPressed={isFlipped}
+      />
       </div>
     </>
   );
