@@ -327,7 +327,7 @@
    background-color: var(--bg-white-dimmed);
 }
 .bg-gray-dimmed {
-   background-color: var(--bg-gray-dimmed);
+   background-color: var(--bg-gray-dimmed)!important;
 }
 .bg-primary {
    background-color: var(--bg-primary);
