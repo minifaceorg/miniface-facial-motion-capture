@@ -135,6 +135,7 @@
   object-fit: cover;
   background: #111;
 }
+
 /* =========================
   BOX SIZING / RESET -
 ========================= */
@@ -2004,8 +2005,8 @@ p.subtitle.refresh-subtitle {
   }
 
   .tb\:w-400 {
-    min-width: 400px;
-    max-width: 400px;
+    min-width: 240px;
+    max-width: 240px;
   }
 
   .tb\:w-392 {
