@@ -635,7 +635,7 @@ button.tertiary,
 button.secondary,
 a.button.primary,
 a.button.secondary {
-  margin-top: 16px;
+  margin-top: 8px;
 }
 
 a.button {
@@ -655,8 +655,8 @@ a.button.primary {
 
 button.tertiary,
 a.button.tertiary {
-  background-color: var(--icon-danger-muted);
-  color: var(--bg-tertiary);
+  background-color: var(--white-color);
+  color: var(--black-color);
 }
 
 button,
