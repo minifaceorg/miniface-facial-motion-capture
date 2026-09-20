@@ -332,7 +332,7 @@ function FaceTracking({
         autoPlay
         playsInline
         muted
-        className={`br-2 br-12 ${isFlipped ? "flipped-x" : ""}`}
+        className={`br-12 ${isFlipped ? "flipped-x" : ""}`}
         style={{}}
       />
       {onStopAnimation && (
