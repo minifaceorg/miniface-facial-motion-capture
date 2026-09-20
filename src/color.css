@@ -323,6 +323,12 @@
    BACKGROUND UTILITIES
    ========================================================================== */
 
+.bg-white-dimmed {
+   background-color: var(--bg-white-dimmed);
+}
+.bg-gray-dimmed {
+   background-color: var(--bg-gray-dimmed);
+}
 .bg-primary {
    background-color: var(--bg-primary);
 }
