@@ -338,12 +338,12 @@ function FaceTracking({
         style={isVideoDimmed ? { height: "46px", filter: "brightness(0.3)" } : undefined}
       />
       <IconButton
-        icon="has-icon flip-icon flipped"
+        icon="has-icon hide-icon flipped"
         iconSize="icon-size-18"
         className="icon-size-32"
-        title={isVideoDimmed ? "Restore video feed" : "Dim video feed"}
+        title={isVideoDimmed ? "show video" : "hide video"}
         tooltip
-        tooltipText={isVideoDimmed ? "Restore video feed" : "Dim video feed"}
+        tooltipText={isVideoDimmed ? "show video" : "hide video"}
         ariaPressed={isVideoDimmed}
         onClick={() => setIsVideoDimmed((dimmed) => !dimmed)}
       />
