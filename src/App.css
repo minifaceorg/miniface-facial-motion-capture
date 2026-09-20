@@ -1627,10 +1627,7 @@ svg {
 
 /* MOBILE ONLY */
 @media (max-width: 768px) {
-  .rec-btn {
-    /* bottom: 38px !important; */
-    left: 37px;
-  }
+
 
   /* .rec-bar-review, .rec-bar {
     transform: translateX(-37px)
