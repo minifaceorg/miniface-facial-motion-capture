@@ -63,7 +63,11 @@ if (supabase) {
     new URLSearchParams(window.location.search).has("code");
 
   supabase.auth.onAuthStateChange((event, session) => {
-    if (event === "SIGNED_IN" && session?.provider_token) {
+    // provider_token is present on the OAuth callback and, when Supabase
+    // refreshes the provider session, on TOKEN_REFRESHED. Persisting only the
+    // access token is intentional: long-lived refresh tokens must stay in the
+    // Supabase auth session, not browser storage.
+    if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session?.provider_token) {
       storeDriveTokens(
         session.provider_token,
         session.provider_refresh_token ?? null,

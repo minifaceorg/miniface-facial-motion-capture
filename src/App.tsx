@@ -109,9 +109,11 @@ function App() {
         redirectTo: getAuthRedirectUrl(),
         skipBrowserRedirect: false,
         scopes: DRIVE_SCOPE,
-        queryParams: {
+          queryParams: {
           access_type: "offline",
           prompt: "consent",
+          // Prevent this re-auth flow from replacing previously granted scopes.
+          include_granted_scopes: "true",
         },
       },
     });
@@ -170,12 +172,15 @@ function App() {
     window.addEventListener("focus", check);
     // Re-check on sessionStorage changes (storeDriveTokens writes here)
     window.addEventListener("storage", check);
+    // Custom event covers same-tab token writes; native storage events do not.
+    window.addEventListener("miniface:drive-token", check);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
       window.removeEventListener("focus", check);
       window.removeEventListener("storage", check);
+      window.removeEventListener("miniface:drive-token", check);
     };
   }, []);
 

@@ -78,10 +78,12 @@ export default function AuthModal({ onClose, onDriveConnected, hasPendingMotion 
         redirectTo: getAuthRedirectUrl(),
         skipBrowserRedirect: false,
         scopes: DRIVE_SCOPE,
-        queryParams: {
-          access_type: "offline",
-          prompt: "consent",
-        },
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+            // Keep the Drive grant when Google re-authenticates the user.
+            include_granted_scopes: "true",
+          },
       },
     });
     if (err) {

@@ -19,11 +19,12 @@
  *
  * Token storage
  * ─────────────
- * We use sessionStorage (not localStorage) so tokens disappear when the
- * tab closes. Keys: "gd_access_token", "gd_refresh_token".
- * Supabase's SIGNEDso_IN event hands us provider_token / provider_refresh_token
- * only on the initial OAuth redirect; supabaseClient.ts captures them and
- * calls storeDriveTokens() right there so we never miss them.
+ * The short-lived provider access token is kept in localStorage so a reload or
+ * later app entry can restore it. The Google refresh token is never sent to
+ * Drive and is only retained by Supabase's encrypted auth session; this avoids
+ * putting a long-lived credential in browser storage.
+ * Supabase may expose provider tokens only during the OAuth callback, so
+ * supabaseClient.ts also synchronizes tokens from every auth/session refresh.
  */
 
 // ─── upload notification (module-level pub/sub) ───────────────────────────────
@@ -100,52 +101,47 @@ const DRIVE_UPLOAD_URL =
   "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,size,modifiedTime,appProperties";
 const DRIVE_FILES_URL =
   "https://www.googleapis.com/drive/v3/files";
-const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.appdata";
+export const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.appdata";
 
-const SS_ACCESS  = "gd_access_token";
-const SS_REFRESH = "gd_refresh_token";
-const SS_EMAIL   = "gd_user_email";
+const LS_ACCESS = "gd_access_token";
+const LS_EMAIL = "gd_user_email";
+const TOKEN_EVENT = "miniface:drive-token";
 
 // ─── token helpers ────────────────────────────────────────────────────────────
 
 /** Store tokens obtained from Supabase SIGNED_IN provider_token fields. */
 export function storeDriveTokens(
   accessToken: string,
-  refreshToken: string | null,
+  _refreshToken: string | null,
   email?: string
 ): void {
   try {
-    sessionStorage.setItem(SS_ACCESS, accessToken);
-    if (refreshToken) sessionStorage.setItem(SS_REFRESH, refreshToken);
-    if (email) sessionStorage.setItem(SS_EMAIL, email);
+    // Access tokens expire quickly, but persisting this value prevents a reload
+    // from falsely looking like Drive permission was revoked.
+    localStorage.setItem(LS_ACCESS, accessToken);
+    if (email) localStorage.setItem(LS_EMAIL, email);
+    window.dispatchEvent(new Event(TOKEN_EVENT));
   } catch {
-    // sessionStorage blocked (private mode in some browsers) — silently skip
+    // Storage can be unavailable in private browsing; the Supabase session is
+    // still authoritative and can be used to restore the token on refresh.
   }
 }
 
-/** Clear Drive tokens on sign-out. */
+/** Clear the browser copy on sign-out. Supabase remains the refresh authority. */
 export function clearDriveTokens(): void {
   try {
-    sessionStorage.removeItem(SS_ACCESS);
-    sessionStorage.removeItem(SS_REFRESH);
-    sessionStorage.removeItem(SS_EMAIL);
-  } catch { /* */ }
+    localStorage.removeItem(LS_ACCESS);
+    localStorage.removeItem(LS_EMAIL);
+    window.dispatchEvent(new Event(TOKEN_EVENT));
+  } catch { /* storage unavailable */ }
 }
 
-/** True when we have a Drive access token in session. */
 export function hasDriveAccess(): boolean {
-  try {
-    return !!sessionStorage.getItem(SS_ACCESS);
-  } catch {
-    return false;
-  }
+  return Boolean(getAccessToken());
 }
 
 function getAccessToken(): string | null {
-  try { return sessionStorage.getItem(SS_ACCESS); } catch { return null; }
-}
-function getRefreshToken(): string | null {
-  try { return sessionStorage.getItem(SS_REFRESH); } catch { return null; }
+  try { return localStorage.getItem(LS_ACCESS); } catch { return null; }
 }
 
 // ─── token refresh ────────────────────────────────────────────────────────────
@@ -157,23 +153,18 @@ function getRefreshToken(): string | null {
  * Returns the new access token, or null on failure.
  */
 async function refreshAccessToken(): Promise<string | null> {
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) return null;
-
-  // Try via supabase session refresh first (preferred — no client secret needed)
+  // Supabase owns the Google refresh token server-side. Calling refreshSession
+  // refreshes that session without exposing a Google client secret in the SPA.
   try {
     const { supabase } = await import("./supabaseClient");
     if (supabase) {
       const { data, error } = await supabase.auth.refreshSession();
       if (!error && data.session?.provider_token) {
-        storeDriveTokens(
-          data.session.provider_token,
-          data.session.provider_refresh_token ?? null
-        );
+        storeDriveTokens(data.session.provider_token, null, data.session.user?.email);
         return data.session.provider_token;
       }
     }
-  } catch { /* supabase refresh failed — fall through */ }
+  } catch { /* session refresh failed — caller must reconnect */ }
 
   return null;
 }
@@ -440,5 +431,3 @@ export async function bulkUploadToDrive(
   onProgress?.({ total: items.length, done, failed });
   return results;
 }
-
-export { DRIVE_SCOPE };
