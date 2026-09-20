@@ -283,7 +283,7 @@ export default function CameraPermissions({
       )}
 
       {cameraPromptAcknowledged && activeStreamRef.current && !animationStarted && !isInPlayback && (
-        <div className="camera-preview-start flex pos-fixed flex-col camera-feed w-1 overflow-hidden tb:w-400 br-12 tb:br-24 m-2 p-2 bg-blur z-999">
+        <div className="camera-preview-start flex pos-fixed flex-col camera-feed w-135 overflow-hidden tb:w-400 br-12 tb:br-24 m-2 p-2 bg-blur z-999">
           <video
             ref={previewVideoRef}
             autoPlay
@@ -297,7 +297,7 @@ export default function CameraPermissions({
             className="button primary prompt-button"
             onClick={handleStartAnimation}
           >
-            start animation
+            animate
           </button>
         </div>
       )}
@@ -315,14 +315,14 @@ export default function CameraPermissions({
             />
           </div>
         )}
-      <IconButton
-        icon="flip-icon"
-        iconSize="icon-size-18"
-        className={`flex video-flip-switcher icon-holder br-12 tab-button size-30 mb:size-48 ${isFlipped ? "flipped" : ""}`}
-        onClick={() => setIsFlipped && setIsFlipped(!isFlipped)}
-        title="Flip camera"
-        ariaPressed={isFlipped}
-      />
+        <IconButton
+          icon="flip-icon"
+          iconSize="icon-size-18"
+          className={`flex video-flip-switcher icon-holder br-12 tab-button size-30  ${isFlipped ? "flipped" : ""}`}
+          onClick={() => setIsFlipped && setIsFlipped(!isFlipped)}
+          title="Flip camera"
+          ariaPressed={isFlipped}
+        />
       </div>
     </>
   );
