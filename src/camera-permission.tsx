@@ -318,7 +318,7 @@ export default function CameraPermissions({
         <IconButton
           icon="flip-icon"
           iconSize="icon-size-18"
-          className={`flex video-flip-switcher icon-holder br-12 tab-button size-30 mb:size-48 ${isFlipped ? "flipped" : ""}`}
+          className={`flex video-flip-switcher icon-holder br-12 tab-button size-30  ${isFlipped ? "flipped" : ""}`}
           onClick={() => setIsFlipped && setIsFlipped(!isFlipped)}
           title="Flip camera"
           ariaPressed={isFlipped}
