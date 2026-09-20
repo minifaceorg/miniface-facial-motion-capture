@@ -301,16 +301,6 @@ export default function CameraPermissions({
         </div>
       )}
 
-      {animationStarted && (
-        <button
-          type="button"
-          className="primary-button camera-preview-stop"
-          onClick={onStopAnimation}
-        >
-          stop animation
-        </button>
-      )}
-
       {/* Main control div */}
       <div className={`flex flex-row flex-start gap-1 pos-abs reveal fade scaleIn top-0 left-0 z-9991 m-1 tb:m-6`}>
         {permissionState === "granted" && cameras.length > 1 && (

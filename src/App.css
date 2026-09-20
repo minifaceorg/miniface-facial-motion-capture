@@ -129,10 +129,10 @@
 
 
 .camera-preview-stop {
-  position: fixed;
-  top: 1rem;
-  left: 1rem;
-  z-index: 9992;
+  position: static;
+  width: 100%;
+  margin-top: 0.5rem;
+  z-index: 1;
 }
 
 .camera-preview {

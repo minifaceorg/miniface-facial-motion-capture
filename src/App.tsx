@@ -668,6 +668,7 @@ function App() {
           onInitError={setInitError}
           disabled={faceTrackingDisabled}
           isFlipped={isFlipped}
+          onStopAnimation={handleStopAnimation}
         />
       )}
 
