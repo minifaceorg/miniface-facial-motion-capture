@@ -327,7 +327,7 @@ function FaceTracking({
   return (
     <div
       id="video"
-      className={`flex pos-fixed flex-col camera-feed z-999 w-1 overflow-hidden tb:w-400 br-12 tb:br-24 m-2 p-2 bg-blur ${disabled ? " switcher-disabled" : ""}`}
+      className={`flex pos-fixed flex-col camera-feed z-999 w-135 overflow-hidden tb:w-400 br-12 tb:br-24 m-2 p-2 bg-blur ${disabled ? " switcher-disabled" : ""}`}
     >
       <video
         ref={videoRef}
@@ -340,7 +340,7 @@ function FaceTracking({
       <IconButton
         icon={`has-icon ${isVideoDimmed ? "show-icon" : "hide-icon"} flipped`}
         iconSize="icon-size-18"
-        className="icon-size-32 pos-abs top-16 right-16 bg-gray-dimmed"
+        className="icon-size-32 pos-abs top-4 right-4 tb:top-16 tb:right-16 bg-gray-dimmed"
         title={isVideoDimmed ? "show video" : "hide video"}
         tooltip
         tooltipText={isVideoDimmed ? "show video" : "hide video"}

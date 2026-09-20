@@ -908,7 +908,10 @@ button {
   min-width: calc(100vw - 40px);
   max-width: calc(100vw - 40px);
 }
-
+.w-135 {
+  max-width: 135px;
+  min-width: 135px;
+}
 /* =========================
    BORDER RADIUS
 ========================= */
