@@ -297,7 +297,7 @@ export default function CameraPermissions({
             className="button primary prompt-button"
             onClick={handleStartAnimation}
           >
-            start animation
+            animate
           </button>
         </div>
       )}
