@@ -340,7 +340,7 @@ function FaceTracking({
       <IconButton
         icon={`has-icon ${isVideoDimmed ? "show-icon" : "hide-icon"} flipped`}
         iconSize="icon-size-18"
-        className="icon-size-32"
+        className="icon-size-32 pos-abs top-16 right-16"
         title={isVideoDimmed ? "show video" : "hide video"}
         tooltip
         tooltipText={isVideoDimmed ? "show video" : "hide video"}
