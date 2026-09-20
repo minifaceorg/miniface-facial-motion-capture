@@ -128,11 +128,13 @@ function FaceTracking({
   onInitError,
   disabled,
   isFlipped,
+  onStopAnimation,
 }: {
   videoStream: MediaStream;
   onMediapipeReady?: () => void;
   onInitProgress?: (progress: InitProgress) => void;
   onInitError?: (message: string) => void;
+  onStopAnimation?: () => void;
   disabled?: boolean;
   isFlipped?: boolean;
 }) {
@@ -323,7 +325,7 @@ function FaceTracking({
   return (
     <div
       id="video"
-      className={`camera-feed w-1 overflow-hidden tb:w-400 br-12 tb:br-24 m-4 ${disabled ? " switcher-disabled" : ""}`}
+      className={`flex pos-fixed flex-col camera-feed w-1 overflow-hidden tb:w-400 br-12 tb:br-24 m-2 p-2 bg-blur ${disabled ? " switcher-disabled" : ""}`}
     >
       <video
         ref={videoRef}
@@ -333,6 +335,15 @@ function FaceTracking({
         className={`br-2 ${isFlipped ? "flipped-x" : ""}`}
         style={{}}
       />
+      {onStopAnimation && (
+        <button
+          type="button"
+          className="primary-button camera-preview-stop"
+          onClick={onStopAnimation}
+        >
+          stop animation
+        </button>
+      )}
     </div>
   );
 }

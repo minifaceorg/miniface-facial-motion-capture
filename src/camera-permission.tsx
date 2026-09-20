@@ -37,6 +37,7 @@ interface CameraPermissionsProps {
   onStartAnimation: () => void;
   onStopAnimation: () => void;
   animationStarted: boolean;
+  isInPlayback?: boolean;
 }
 
 export default function CameraPermissions({
@@ -49,6 +50,7 @@ export default function CameraPermissions({
   onStartAnimation,
   onStopAnimation,
   animationStarted,
+  isInPlayback = false,
 }: CameraPermissionsProps) {
   const [permissionState, setPermissionState] = useState<"prompt" | "denied" | "granted" | "inuse">("prompt");
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
@@ -180,7 +182,7 @@ export default function CameraPermissions({
       video.removeEventListener("loadedmetadata", playPreview);
       if (video.srcObject === previewStream) video.srcObject = null;
     };
-  }, [previewStream, cameraPromptAcknowledged]);
+  }, [previewStream, cameraPromptAcknowledged, animationStarted, isInPlayback]);
 
   useEffect(() => {
     if (!navigator.permissions) return;
@@ -279,7 +281,7 @@ export default function CameraPermissions({
         />
       )}
 
-      {cameraPromptAcknowledged && activeStreamRef.current && !animationStarted && (
+      {cameraPromptAcknowledged && activeStreamRef.current && !animationStarted && !isInPlayback && (
         <div className="camera-preview-start flex pos-fixed flex-col camera-feed w-1 overflow-hidden tb:w-400 br-12 tb:br-24 m-2 p-2 bg-blur z-999">
           <video
             ref={previewVideoRef}
@@ -297,16 +299,6 @@ export default function CameraPermissions({
             start animation
           </button>
         </div>
-      )}
-
-      {animationStarted && (
-        <button
-          type="button"
-          className="primary-button camera-preview-stop"
-          onClick={onStopAnimation}
-        >
-          stop animation
-        </button>
       )}
 
       {/* Main control div */}

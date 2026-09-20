@@ -651,6 +651,7 @@ function App() {
   onStartAnimation={() => setAnimationStarted(true)}
   onStopAnimation={handleStopAnimation}
   animationStarted={animationStarted}
+  isInPlayback={isInPlayback}
   />
 
       <TrackingLoader
@@ -667,6 +668,7 @@ function App() {
           onInitError={setInitError}
           disabled={faceTrackingDisabled}
           isFlipped={isFlipped}
+          onStopAnimation={handleStopAnimation}
         />
       )}
 
