@@ -15,8 +15,9 @@
 // All MediaPipe inference now runs on a dedicated worker thread so the main
 // thread remains free for React updates and Three.js rendering.
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Euler, Matrix4 } from "three";
+import IconButton from "./components/IconButton";
 
 // ─── Module globals — same public API as before ───────────────────────────────
 // Avatar.tsx reads these directly from the module scope inside useFrame().
@@ -139,6 +140,7 @@ function FaceTracking({
   isFlipped?: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isVideoDimmed, setIsVideoDimmed] = useState(false);
   const workerRef = useRef<Worker | null>(null);
   const predictLoopRef = useRef<number | null>(null);
   const pendingRef = useRef<boolean>(false); // backpressure: one frame in-flight at a time
@@ -333,7 +335,17 @@ function FaceTracking({
         playsInline
         muted
         className={`br-12 ${isFlipped ? "flipped-x" : ""}`}
-        style={{}}
+        style={isVideoDimmed ? { height: "46px", filter: "brightness(0.3)" } : undefined}
+      />
+      <IconButton
+        icon="has-icon flip-icon flipped"
+        iconSize="icon-size-18"
+        className="icon-size-32"
+        title={isVideoDimmed ? "Restore video feed" : "Dim video feed"}
+        tooltip
+        tooltipText={isVideoDimmed ? "Restore video feed" : "Dim video feed"}
+        ariaPressed={isVideoDimmed}
+        onClick={() => setIsVideoDimmed((dimmed) => !dimmed)}
       />
       {onStopAnimation && (
         <button
