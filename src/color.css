@@ -7,6 +7,7 @@
    /* =========================
      NEUTRAL / GRAY
      ========================= */
+   --white-dimmed: rgb(250 250 250 / 70%);
    --gray-1000: #FFFFFF;
    --gray-100: #EBF0F5;
    --gray-100-op50: rgba(235, 240, 245, 0.5);
@@ -19,7 +20,7 @@
    --gray-800: #3A3E4F;
    --gray-900: #272939;
       --gray-9000: #000000;
-
+   --gray-dimmed: rgb(12 12 12 / 30%);
    /* =========================
      PURPLE
      ========================= */
@@ -100,7 +101,8 @@
    --bg-danger-active: var(--red-700);
    --bg-danger-soft: var(--red-100);
    --bg-danger-soft-hover: var(--red-200);
-
+   --bg-gray-dimmed: var(--gray-dimmed);
+   --bg-white-dimmed: var(--white-dimmed);
    /* =========================
      OVERLAYS
      ========================= */
