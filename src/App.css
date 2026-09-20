@@ -1887,6 +1887,10 @@ p.subtitle.refresh-subtitle {
    TABLET AND UP  (min-width: 769px)
 ========================= */
 @media (min-width: 769px) {
+  .tb\:top-16 {
+    top: 16px;
+  }
+
   .tb\:left-0 {
     left: 0 !important;
   }
@@ -1950,6 +1954,9 @@ p.subtitle.refresh-subtitle {
 
   .tb\:right-12 {
     right: 12px;
+  }
+  .tb\:right-16 {
+    right: 16px;
   }
 
   .tb\:right-50 {
