@@ -655,7 +655,7 @@ a.button.primary {
 
 button.tertiary,
 a.button.tertiary {
-  background-color: var(--red-600);
+  background-color: var(--icon-danger-muted);
   color: var(--gray-900);
 }
 
