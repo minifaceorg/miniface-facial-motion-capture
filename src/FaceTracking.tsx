@@ -335,7 +335,11 @@ function FaceTracking({
         playsInline
         muted
         className={`br-12 ${isFlipped ? "flipped-x" : ""}`}
-        style={isVideoDimmed ? { height: "46px", filter: "brightness(0.3)" } : undefined}
+        style={
+          isVideoDimmed
+            ? { height: "46px", filter: "brightness(0.3)", objectFit: "cover" }
+            : { objectFit: "initial" }
+        }
       />
       <IconButton
         icon={`has-icon ${isVideoDimmed ? "show-icon" : "hide-icon"} flipped`}
