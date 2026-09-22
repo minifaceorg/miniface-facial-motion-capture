@@ -501,8 +501,19 @@ function App() {
 
   // ── Start live capture from inside library panel or player ───────────────
   const handleStartLive = useCallback(() => {
-  setAnimationStarted(false);
-  const wasInPlayback = !!playbackBlob;
+    const wasInPlayback = !!playbackBlob;
+
+    // User was only browsing the library while still live-animating — they
+    // never entered saved-motion playback. Clicking "back to live" here should
+    // NOT stop or reset the running animation; just close the panel and restore
+    // the library button so the live session continues exactly as before.
+    if (!wasInPlayback) {
+      closeLibrary();
+      setLibraryButtonActive(false);
+      return;
+    }
+
+    setAnimationStarted(false);
 
     // If currently recording, stop gracefully before switching
     if (recordingPhase === "recording") {
@@ -515,11 +526,8 @@ function App() {
     handlePhaseChange("idle");
     closeLibrary();
     setLibraryButtonActive(false);
-    // Only reinitiate mediapipe when coming out of playback — if we were
-    // already in live mode, there is no need to reset it
-    if (wasInPlayback) {
-      setMediapipeReady(false);
-    }
+    // Coming out of playback — reinitialise mediapipe for the live session
+    setMediapipeReady(false);
   }, [recordingPhase, handlePhaseChange, playbackBlob, closeLibrary]);
 
   // ── When library opens, stop recording gracefully and re-check auth ─────────
