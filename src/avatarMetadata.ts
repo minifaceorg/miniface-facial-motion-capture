@@ -303,3 +303,48 @@ export function getAvatarMetadata(avatarPath: string): AvatarMetadata {
 export function getAllAvatars(): AvatarMetadata[] {
   return AVATAR_METADATA.filter((m) => m.avatarPath); // Only return avatars with valid URLs
 }
+
+/**
+ * Resolve ANY stored avatar reference to a canonical, currently-loadable URL.
+ *
+ * Motion files (and localStorage) may hold avatar URLs saved across several
+ * naming/hosting schemes over the app's life:
+ *   • current registry URLs   – "https://.../avatar-ponytail.glb"
+ *   • Cloudinary / preview URLs that still use the new avatar-<style>.glb names
+ *   • legacy local paths       – "/avatar/avatar1.glb" … "/avatar/avatar5.glb"
+ *   • dead local paths          – any other "/avatar/*.glb" that no longer exists
+ *
+ * A dead local path is the crash trigger: the SPA server answers the 404 with
+ * index.html, GLTFLoader receives "<!doctype html>" and throws while parsing,
+ * taking down the whole render tree. This resolver guarantees the returned URL
+ * is always a real registry entry, so a bad/stale reference can never reach the
+ * loader. It is deliberately universal — old and new motion data both funnel
+ * through the same lookup.
+ */
+export function resolveAvatarUrl(stored: string | null | undefined): string {
+  const avatars = getAllAvatars();
+  const fallback = avatars[0]?.avatarPath ?? "";
+  if (!stored) return fallback;
+
+  // Already a canonical registry URL — use as-is.
+  if (avatars.some((a) => a.avatarPath === stored)) return stored;
+
+  const fileOf = (u: string) =>
+    (u.split("/").pop()?.split("?")[0] ?? "").toLowerCase();
+  const storedFilename = fileOf(stored);
+
+  // Match by current filename (covers Cloudinary/preview variants that kept the
+  // new avatar-<style>.glb naming but a different host).
+  const byFilename = avatars.find((a) => fileOf(a.avatarPath) === storedFilename);
+  if (byFilename) return byFilename.avatarPath;
+
+  // Legacy naming: avatar1.glb … avatarN.glb mapped to registry order.
+  const legacy = storedFilename.match(/^avatar(\d+)\.glb$/);
+  if (legacy) {
+    const idx = parseInt(legacy[1], 10) - 1;
+    if (idx >= 0 && idx < avatars.length) return avatars[idx].avatarPath;
+  }
+
+  // Unknown or dead path — never hand it to the loader. Use the default avatar.
+  return fallback;
+}
