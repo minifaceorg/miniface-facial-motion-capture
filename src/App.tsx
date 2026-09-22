@@ -32,7 +32,7 @@ import IconButton from "./components/IconButton";
 import { supabase } from "./supabaseClient";
 import { hasDriveAccess, clearDriveTokens, listDriveMotions, uploadToDrive, subscribeMotionUploaded, subscribeQuotaExceeded, subscribeNoDriveScope, subscribeUploadFailed, DriveQuotaError, BulkSyncProgress, DRIVE_SCOPE } from "./useDriveSync";
 import type { DriveMotionFile } from "./useDriveSync";
-import { getAllAvatars } from "./avatarMetadata";
+import { getAllAvatars, resolveAvatarUrl } from "./avatarMetadata";
 import type { User } from "@supabase/supabase-js";
 import { getAuthRedirectUrl, rememberAuthReturnUrl, restoreAuthReturnUrl } from "./authRedirect";
 
@@ -557,19 +557,12 @@ function App() {
     // the current AVATAR_METADATA registry. If a match is found, use that
     // canonical URL (always up-to-date Cloudinary). If not found, fall back to
     // the stored value so unknown avatars still attempt to load.
-    const rawAvatarUrl = file.avatarUrl ?? null;
-    let targetAvatarUrl: string | null = null;
-    if (rawAvatarUrl) {
-      const storedFilename = rawAvatarUrl.split("/").pop()?.split("?")[0] ?? "";
-      const allAvatars = getAllAvatars();
-      const matched = allAvatars.find((a) => {
-        const registryFilename = a.avatarPath.split("/").pop()?.split("?")[0] ?? "";
-        // Match on the bare GLB filename (e.g. "avatar-braids.glb" or "avatar3.glb").
-        // Also handle old naming like "avatar3.glb" → not in new registry, fall through.
-        return registryFilename === storedFilename;
-      });
-      targetAvatarUrl = matched ? matched.avatarPath : rawAvatarUrl;
-    }
+    // resolveAvatarUrl always returns a real, loadable registry URL — it maps
+    // legacy names (avatar1.glb…), Cloudinary/preview hosts, and dead local
+    // paths onto the current registry, falling back to the default avatar for
+    // anything unknown. This is what prevents a stale "/avatar/avatarN.glb"
+    // reference from reaching GLTFLoader and crashing the app.
+    const targetAvatarUrl = resolveAvatarUrl(file.avatarUrl);
 
     // If the motion was recorded on a different avatar (or we know its avatar
     // URL and it differs from current), swap the avatar first. The skeleton
