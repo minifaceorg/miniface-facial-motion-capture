@@ -522,7 +522,7 @@ function App() {
     }
   }, [recordingPhase, handlePhaseChange, playbackBlob, closeLibrary]);
 
-  // ── When library opens, stop recording gracefully and re-check auth ─────────
+  // ── When library opens, stop recording gracefully and re-check auth ──��──────
   const handleOpenLibrary = useCallback(() => {
     if (recordingPhase === "recording") {
       discardRecording();
@@ -648,12 +648,12 @@ function App() {
   />
 
       <TrackingLoader
-        visible={currentUser !== null && animationStarted && avatarReady && videoStream != null && !mediapipeReady && !isInPlayback}
+        visible={currentUser !== null && animationStarted && avatarReady && videoStream != null && !mediapipeReady && !isInPlayback && !motionLoading}
         progress={initProgress}
         error={initError}
       />
 
-      {currentUser !== null && animationStarted && videoStream && !isInPlayback && (
+      {currentUser !== null && animationStarted && videoStream && !isInPlayback && !motionLoading && (
         <FaceTracking
           videoStream={videoStream}
           onMediapipeReady={handleMediapipeReady}
@@ -717,7 +717,7 @@ function App() {
       <ColorSwitcher disabled={isSwitcherDisabled || isInPlayback} />
       <AvatarSwitcher activeUrl={url} onAvatarChange={handleAvatarChange} disabled={isSwitcherDisabled || isInPlayback || libraryOpen} />
 
-      {/* Recording controls — always rendered so the review overlay stays visible
+      {/* Recording controls �� always rendered so the review overlay stays visible
           while playback is active. In idle phase, the "record" button is hidden
           when playback is already running (isInPlayback) so it doesn't overlap. */}
       <RecordingControls
