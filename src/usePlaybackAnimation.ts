@@ -21,9 +21,42 @@
  */
 
 import { useEffect, useRef, useCallback } from "react";
-import { AnimationMixer, AnimationClip, Object3D } from "three";
+import { AnimationMixer, AnimationClip, Object3D, PropertyBinding } from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { useFrame } from "@react-three/fiber";
+
+/**
+ * Remove animation tracks that target a node which does not exist in the
+ * skeleton we're about to play onto.
+ *
+ * Recorded GLBs can contain tracks for leaf/tail helper bones (e.g.
+ * "HeadTop_End_end", "LeftEye_end", "LeftHandThumb4_end"). Whether those nodes
+ * exist depends on which rig/exporter produced the clip, so an old or
+ * cross-rig recording will reference bones the current character doesn't have.
+ * THREE.AnimationMixer resolves every track against the root when an action is
+ * activated; each unresolved track fires a "THREE.PropertyBinding: No target
+ * node found for track" warning. A single recording can carry hundreds of
+ * these (position/quaternion/scale per missing bone), flooding the console and
+ * stalling playback.
+ *
+ * By resolving each track against the live character scene up front — exactly
+ * the way the mixer does internally — and dropping the ones that don't bind, we
+ * make playback safe for both new and legacy recordings without touching the
+ * stored data.
+ */
+function stripUnresolvableTracks(clip: AnimationClip, root: Object3D): AnimationClip {
+  const resolvable = clip.tracks.filter((track) => {
+    try {
+      const { nodeName } = PropertyBinding.parseTrackName(track.name);
+      return Boolean(PropertyBinding.findNode(root, nodeName));
+    } catch {
+      return false;
+    }
+  });
+
+  if (resolvable.length === clip.tracks.length) return clip;
+  return new AnimationClip(clip.name, clip.duration, resolvable);
+}
 
 export interface PlaybackState {
   isPlaying: boolean;
@@ -140,6 +173,12 @@ export function usePlaybackAnimation({
           });
           clip = new AnimationClip(clip.name, clip.duration, filtered);
         }
+
+        // Drop tracks whose target bone is absent from THIS character's
+        // skeleton. Prevents the "No target node found for track" warning
+        // flood (and resulting playback stall) for recordings made against a
+        // different / older rig. Works for both new and legacy motion data.
+        clip = stripUnresolvableTracks(clip, characterScene);
 
         clipRef.current = clip;
 
