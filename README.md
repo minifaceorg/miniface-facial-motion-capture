@@ -220,57 +220,55 @@ Each chain requires:
 
 ```
 miniface-facial-motion-capture/
-├── 📄 .gitignore          # Specifies intentionally untracked files to ignore
-├── 📄 package.json        # Lists the project's dependencies and scripts
-├── 📄 package-lock.json   # Records the exact version of each installed package
-├── 📄 README.md           # This file, providing an overview of the project
-├── 📄 PROJECT_OVERVIEW.md # Detailed technical documentation of the codebase
-├── 📄 tsconfig.json       # The configuration file for the TypeScript compiler
-├── 📄 vercel.json         # Vercel deployment configuration
-├── 📁 public/              # Contains static assets that are publicly accessible
-│   ├── 📁 animation/       # Idle animation GLB files for avatars
-│   ├── 📁 avatar/          # Stores the 3D avatar models in .glb format
-│   ├── 📁 images/          # Contains various image assets for the application
+├── 📄 .gitignore              # Specifies intentionally untracked files to ignore
+├── 📄 LICENSE.md              # MIT license with attribution requirement
+├── 📄 package.json            # Project dependencies and npm scripts
+├── 📄 package-lock.json       # Exact dependency versions
+├── 📄 README.md               # Project overview and setup instructions
+├── 📄 PROJECT_OVERVIEW.md     # Detailed technical documentation
+├── 📄 tsconfig.json           # TypeScript compiler configuration
+├── 📄 vercel.json             # Vercel deployment configuration
+├── 📁 public/                 # Static assets served by the application
+│   ├── 📁 animation/          # Idle animation GLB files
+│   ├── 📁 images/
 │   │   ├── 📁 app/
-│   │   │   ├── 📁 avatar/
-│   │   │   ├── 📁 explainers/
-│   │   │   └── 📁 icons/
-│   │   └── 📁 seo/
-│   ├── 📁 models/          # MediaPipe model files
-│   │   └── 📄 face_landmarker.task # Face detection model
-│   ├── 📁 wasm/            # WebAssembly files for MediaPipe
-│   │   ├── 📄 vision_wasm_internal.js
-│   │   ├── 📄 vision_wasm_module_internal.js
-│   │   └── 📄 vision_wasm_nosimd_internal.js
-│   ├── 📄 index.html       # The main HTML file that serves as the entry point
-│   ├── 📄 manifest.json    # PWA manifest for web app installation
-│   ├── 📄 robots.txt       # SEO robots configuration
-│   └── 📄 sitemap.xml      # XML sitemap for search engines
-└── 📁 src/                # Contains the main source code for the application
-    ├── 📁 components/     # Reusable React components used throughout the app
-    │   ├── 📄 AvatarSwitcher.tsx     # Allows users to switch between different avatars
-    │   ├── 📄 ColorSwitcher.tsx      # Enables changing the background color
-    │   ├── 📄 CustomDropdown.tsx     # A custom dropdown component for UI elements
-    │   ├── 📄 PermissionPopup.tsx    # Camera permission request popup
-    │   └── 📄 RecordingControls.tsx  # Motion capture recording UI
-    ├── 📄 App.css          # Styles for the main application component (includes recording UI)
-    ├── 📄 App.tsx          # The root component of the application
-    ├── 📄 Avatar.tsx       # Renders the 3D avatar model (integrated with motion capture)
-    ├── 📄 AvatarCanvas.tsx # The Three.js canvas where the avatar is displayed
-    ├── 📄 AvatarLoader.tsx # A loading avatar indicator component
-    ├── 📄 AvatarOrbitControls.tsx   # Implements camera controls for the avatar
-    ├── 📄 camera-permission.tsx     # Handles requesting and managing camera permissions
-    ├── 📄 FaceTracking.tsx # Face detection host — owns video element, pumps frames to worker
-    ├── 📄 faceWorker.js    # Web Worker for face tracking (runs MediaPipe on separate thread)
-    ├── 📄 SecondaryMotionSystem.ts  # Spring-based physics for secondary motion (hair, cloth)
-    ├── 📄 smoothing.ts     # Pure math utilities for real-time motion smoothing
-    ├── 📄 useAnimationPlayer.ts     # Hook for playing idle animations with proper bone exclusion
-    ├── 📄 useMotionRecorder.ts      # Motion capture recording engine and GLB export
-    ├── 📄 useSecondaryMotion.ts     # React Three Fiber hook for secondary motion integration
-    ├── 📄 avatarMetadata.ts         # Avatar metadata and configuration
-    ├── 📄 color.css        # Color theme and styling
-    ├── 📄 icon.css         # Icon styling
-    ├── 📄 index.css        # Global styles
-    ├── 📄 index.tsx        # The entry point for the React application
-    └── 📄 react-app-env.d.ts        # TypeScript type declarations for the React environment
+│   │   │   ├── 📁 avatar/     # Avatar preview images
+│   │   │   ├── 📁 explainers/ # Camera and feature explainers
+│   │   │   └── 📁 icons/      # UI and cursor icons
+│   │   └── 📁 seo/            # SEO and social preview images
+│   ├── 📁 models/             # MediaPipe model files
+│   │   ├── 📄 face_landmarker.task
+│   │   ├── 📄 hand_landmarker.task
+│   │   └── 📄 pose_landmarker_lite.task
+│   ├── 📁 wasm/               # MediaPipe WebAssembly runtime files
+│   ├── 📄 index.html          # Application entry HTML
+│   ├── 📄 manifest.json       # PWA manifest
+│   ├── 📄 robots.txt          # Crawler configuration
+│   └── 📄 sitemap.xml         # Sitemap for search engines
+└── 📁 src/                    # React and TypeScript source code
+    ├── 📁 components/         # Reusable UI components and styles
+    ├── 📁 pages/              # Marketing and legal pages
+    ├── 📄 App.tsx             # Root application component
+    ├── 📄 Avatar.tsx          # 3D avatar rendering and animation
+    ├── 📄 AvatarCanvas.tsx    # Three.js scene and canvas
+    ├── 📄 AvatarLoader.tsx    # Avatar loading state UI
+    ├── 📄 AvatarOrbitControls.tsx # Avatar camera controls
+    ├── 📄 FaceTracking.tsx    # Face tracking host and worker bridge
+    ├── 📄 faceWorker.js       # MediaPipe face tracking Web Worker
+    ├── 📄 SecondaryMotionSystem.ts # Spring-based secondary motion
+    ├── 📄 smoothing.ts        # Real-time motion smoothing utilities
+    ├── 📄 useAnimationPlayer.ts # Idle animation playback hook
+    ├── 📄 useDriveSync.ts     # Drive synchronization hook
+    ├── 📄 useMotionRecorder.ts # Recording and GLB export hook
+    ├── 📄 usePlaybackAnimation.ts # Recorded animation playback hook
+    ├── 📄 useSecondaryMotion.ts # Secondary motion integration hook
+    ├── 📄 avatarMetadata.ts   # Avatar metadata and configuration
+    ├── 📄 authRedirect.ts     # Authentication redirect handling
+    ├── 📄 camera-permission.tsx # Camera permission and device selection
+    ├── 📄 color.css           # Color theme definitions
+    ├── 📄 components.css      # Shared component styles
+    ├── 📄 index.css           # Global styles
+    ├── 📄 index.tsx           # React application entry point
+    ├── 📄 supabaseClient.ts   # Supabase client configuration
+    └── 📄 react-app-env.d.ts  # React environment type declarations
 ```

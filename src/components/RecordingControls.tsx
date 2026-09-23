@@ -29,6 +29,7 @@ import {
   startRecording,
   stopRecording,
   discardRecording,
+  MAX_RECORDING_SECONDS,
 } from "../useMotionRecorder";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -109,8 +110,14 @@ const RecordingControls: React.FC<RecordingControlsProps> = ({
     if (phase === "recording") {
       timerRef.current = setInterval(() => {
         const state = getRecorderState();
-        setElapsed(state.duration);
+        const duration = Math.min(state.duration, MAX_RECORDING_SECONDS);
+        setElapsed(duration);
         setFrameCount(state.frameCount);
+        if (duration >= MAX_RECORDING_SECONDS) {
+          // Use the same handler as the visible Stop button so the automatic
+          // transition renders and saves exactly like a manual stop.
+          handleStop();
+        }
       }, 100);
     } else {
       if (timerRef.current) {
@@ -121,6 +128,8 @@ const RecordingControls: React.FC<RecordingControlsProps> = ({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
+    // handleStop is declared below and is stable; keep this timer tied to phase.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
   // ── handlers ─────────────────────────────────────────────────────────────────
