@@ -124,6 +124,9 @@ let _frames: MotionFrame[] = [];
 let _startTime = 0;
 let _finalDuration = 0; // stored when recording stops
 
+/** Maximum duration for a single motion capture recording. */
+export const MAX_RECORDING_SECONDS = 30;
+
 /** Cached blob from the last stopRecording() build — reused by buildAndExportGLB */
 // eslint-disable-next-line prefer-const
 let _cachedBlob: { blob: Blob; name: string } | null = null;
@@ -185,7 +188,7 @@ function _notifyStart() {
   _startListeners.forEach((fn) => fn());
 }
 
-// ─── scene reference (called from Avatar.tsx) ─────────────��───────────────────
+// ���── scene reference (called from Avatar.tsx) ─────────────��───────────────────
 
 /**
  * Avatar.tsx calls this in useEffect whenever the GLTF scene loads / reloads.
@@ -360,7 +363,10 @@ export function captureFrame(
 ): void {
   if (!_isRecording) return;
 
-  const t = (performance.now() - _startTime) / 1000;
+  const t = Math.min(
+    (performance.now() - _startTime) / 1000,
+    MAX_RECORDING_SECONDS,
+  );
 
   const bsMap: Record<string, number> = {};
   for (let i = 0; i < currentBlendshapes.length; i++) {
@@ -386,6 +392,11 @@ export function captureFrame(
 
   // Notify UI listeners at ~1 Hz (assuming ~30 fps)
   if (_frames.length % 30 === 0) _notify();
+
+  // Enforce the cap in the capture layer as a safety net. The controls also
+  // use the same stop handler on their timer, so the visible UX remains the
+  // exact same as a manual stop.
+  if (t >= MAX_RECORDING_SECONDS) stopRecording();
 }
 
 // ─── export ───────────────────────────────────────────────────────────────────
@@ -395,7 +406,7 @@ export function captureFrame(
  * Does NOT download the file or notify listeners — useful for programmatic use.
  */
 export async function buildGLBBlob(): Promise<{ blob: Blob; durationSeconds: number }> {
-  // ── guards ──────────────────────────────────────────────────────────────────
+  // ── guards ──────────────────────────────────────���───────────────────────────
   if (!_scene) {
     throw new Error(
       "No avatar scene is available. Load an avatar before exporting."
@@ -589,7 +600,7 @@ export async function buildGLBBlob(): Promise<{ blob: Blob; durationSeconds: num
     );
   }
 
-  // ── finger bone tracks ─────────────────────────────────────────────────────
+  // ── finger bone tracks ────────────────────────────────────────────────────���
   // Build QuaternionKeyframeTrack for every finger + wrist bone that had at
   // least one non-identity frame.  We only emit tracks when a hand was seen,
   // so files stay lean for face-only recordings.
