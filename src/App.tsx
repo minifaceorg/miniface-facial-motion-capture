@@ -653,6 +653,7 @@ function App() {
   onStopAnimation={handleStopAnimation}
   animationStarted={animationStarted}
   isInPlayback={isInPlayback}
+  motionLoading={motionLoading}
   />
 
       <TrackingLoader
